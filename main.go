@@ -4,6 +4,7 @@ import (
 	"flag"
 	"io"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/mklnz/fyro-templater/dataparser"
@@ -20,6 +21,10 @@ func init() {
 	outputFile = flag.String("o", "", "path to output file")
 }
 
+func stringJoin(s []string, sep string) string {
+	return strings.Join(s, sep)
+}
+
 func main() {
 	flag.Parse()
 
@@ -28,13 +33,14 @@ func main() {
 
 	templateFile = flag.Arg(0)
 
-	t, err := template.ParseFiles(templateFile)
+	t, err := template.New("virtualhost.tmpl").Funcs(
+		template.FuncMap{"stringJoin": stringJoin},
+	).ParseFiles(templateFile)
 	if err != nil {
 		panic(err)
 	}
 
 	var output io.Writer
-
 	if *outputFile != "" {
 		output, err = os.Create(*outputFile)
 		if err != nil {
